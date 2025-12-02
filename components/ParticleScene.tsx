@@ -278,19 +278,19 @@ export default function ParticleScene({ shape: initialShape, gradient }: Particl
 
                         switch (detectedFingerCount) {
                             case 1:
-                                newShape = 'hello';
+                                newShape = 'yneas';
                                 break;
                             case 2:
-                                newShape = 'peace';
+                                newShape = 'meow';
                                 break;
                             case 3:
-                                newShape = 'threesome';
+                                newShape = 'suzu';
                                 break;
                             case 4:
-                                newShape = 'four';
+                                newShape = 'rz';
                                 break;
                             case 5:
-                                newShape = '555';
+                                newShape = 'indra';
                                 break;
                             default:
                                 newShape = 'fireworks'; // Return to fireworks burst
@@ -306,12 +306,13 @@ export default function ParticleScene({ shape: initialShape, gradient }: Particl
                     }
                     handTension = totalTension / results.multiHandLandmarks.length;
 
-                    // Check if we're showing a text shape (need stability)
-                    const isShowingText = currentShapeRef.current === 'hello' ||
-                        currentShapeRef.current === 'peace' ||
-                        currentShapeRef.current === 'threesome' ||
-                        currentShapeRef.current === 'four' ||
-                        currentShapeRef.current === '555';
+                    // Check if we're in fireworks mode or showing text (no spinning)
+                    const isFireworksMode = baseShapeRef.current === 'fireworks';
+                    const isShowingText = currentShapeRef.current === 'yneas' ||
+                        currentShapeRef.current === 'meow' ||
+                        currentShapeRef.current === 'suzu' ||
+                        currentShapeRef.current === 'rz' ||
+                        currentShapeRef.current === 'indra';
 
                     // Pinch = Spin with direction
                     if (rightHandPinching || leftHandPinching) {
@@ -393,11 +394,11 @@ export default function ParticleScene({ shape: initialShape, gradient }: Particl
                 if (!targets) return;
 
                 // Check if showing text shapes
-                const isShowingText = currentShapeRef.current === 'hello' ||
-                    currentShapeRef.current === 'peace' ||
-                    currentShapeRef.current === 'threesome' ||
-                    currentShapeRef.current === 'four' ||
-                    currentShapeRef.current === '555';
+                const isShowingText = currentShapeRef.current === 'yneas' ||
+                    currentShapeRef.current === 'meow' ||
+                    currentShapeRef.current === 'suzu' ||
+                    currentShapeRef.current === 'rz' ||
+                    currentShapeRef.current === 'indra';
 
                 // Particles stay centered (no hand following)
                 // Disable implode effect when showing text for stability

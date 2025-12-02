@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 
-export type ShapeType = 'heart' | 'flower' | 'saturn' | 'buddha' | 'fireworks' | 'hello' | 'peace' | 'threesome' | 'four' | '555';
+export type ShapeType = 'heart' | 'flower' | 'saturn' | 'buddha' | 'fireworks' | 'yneas' | 'meow' | 'suzu' | 'rz' | 'indra';
 
 export const generateShapePoints = (type: ShapeType, count: number): Float32Array => {
     const positions = new Float32Array(count * 3);
@@ -23,20 +23,20 @@ export const generateShapePoints = (type: ShapeType, count: number): Float32Arra
             case 'fireworks':
                 getFireworksPoint(vector);
                 break;
-            case 'hello':
-                getTextPoint(vector, 'HELLO');
+            case 'yneas':
+                getTextPoint(vector, 'YNEAS');
                 break;
-            case 'peace':
-                getTextPoint(vector, 'PEACE?');
+            case 'meow':
+                getTextPoint(vector, 'MEOW MEOW');
                 break;
-            case 'threesome':
-                getTextPoint(vector, 'THREESOME?');
+            case 'suzu':
+                getTextPoint(vector, 'SUZU');
                 break;
-            case 'four':
-                getTextPoint(vector, 'FOUR!');
+            case 'rz':
+                getTextPoint(vector, 'RZ');
                 break;
-            case '555':
-                getTextPoint(vector, '555');
+            case 'indra':
+                getTextPoint(vector, 'INDRA');
                 break;
         }
         positions[i * 3] = vector.x;
@@ -151,16 +151,22 @@ const LETTERS: { [key: string]: number[][] } = {
     'M': [[1, 0, 0, 0, 1], [1, 1, 0, 1, 1], [1, 0, 1, 0, 1], [1, 0, 0, 0, 1], [1, 0, 0, 0, 1]],
     'F': [[1, 1, 1, 1, 1], [1, 0, 0, 0, 0], [1, 1, 1, 1, 0], [1, 0, 0, 0, 0], [1, 0, 0, 0, 0]],
     'U': [[1, 0, 0, 0, 1], [1, 0, 0, 0, 1], [1, 0, 0, 0, 1], [1, 0, 0, 0, 1], [0, 1, 1, 1, 0]],
+    'Y': [[1, 0, 0, 0, 1], [0, 1, 0, 1, 0], [0, 0, 1, 0, 0], [0, 0, 1, 0, 0], [0, 0, 1, 0, 0]],
+    'N': [[1, 0, 0, 0, 1], [1, 1, 0, 0, 1], [1, 0, 1, 0, 1], [1, 0, 0, 1, 1], [1, 0, 0, 0, 1]],
+    'W': [[1, 0, 0, 0, 1], [1, 0, 0, 0, 1], [1, 0, 1, 0, 1], [1, 1, 0, 1, 1], [1, 0, 0, 0, 1]],
+    'Z': [[1, 1, 1, 1, 1], [0, 0, 0, 1, 0], [0, 0, 1, 0, 0], [0, 1, 0, 0, 0], [1, 1, 1, 1, 1]],
+    'D': [[1, 1, 1, 1, 0], [1, 0, 0, 0, 1], [1, 0, 0, 0, 1], [1, 0, 0, 0, 1], [1, 1, 1, 1, 0]],
+    'I': [[1, 1, 1, 1, 1], [0, 0, 1, 0, 0], [0, 0, 1, 0, 0], [0, 0, 1, 0, 0], [1, 1, 1, 1, 1]],
     '?': [[0, 1, 1, 1, 0], [1, 0, 0, 0, 1], [0, 0, 0, 1, 0], [0, 0, 0, 0, 0], [0, 0, 1, 0, 0]],
     '!': [[0, 0, 1, 0, 0], [0, 0, 1, 0, 0], [0, 0, 1, 0, 0], [0, 0, 0, 0, 0], [0, 0, 1, 0, 0]],
     '5': [[1, 1, 1, 1, 1], [1, 0, 0, 0, 0], [1, 1, 1, 1, 0], [0, 0, 0, 0, 1], [1, 1, 1, 1, 0]],
     ' ': [[0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0]],
 };
 
-// Generate particles for text
+// Generate particles for text - reduced size
 const getTextPoint = (target: THREE.Vector3, text: string) => {
-    const pixelSize = 0.25;
-    const charSpacing = 0.4;
+    const pixelSize = 0.15; // Reduced from 0.25
+    const charSpacing = 0.25; // Reduced from 0.4
 
     const pixels: { x: number; y: number }[] = [];
     let currentX = 0;
@@ -192,5 +198,5 @@ const getTextPoint = (target: THREE.Vector3, text: string) => {
     const totalWidth = currentX - charSpacing;
     target.x = pixel.x - totalWidth / 2;
     target.y = pixel.y - (4 * pixelSize) / 2;
-    target.z = (Math.random() - 0.5) * 0.2;
+    target.z = (Math.random() - 0.5) * 0.15; // Reduced depth
 };

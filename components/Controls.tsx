@@ -39,11 +39,6 @@ export default function Controls({ currentShape, onShapeChange }: ControlsProps)
                     </button>
                 ))}
             </div>
-
-            <div className="text-white/50 text-xs mt-2 text-center">
-                <p>✊ Fist to Implode • 🤏 Pinch to Spin (L/R for direction) • 👐 Two Hands to Scale</p>
-                <p className="mt-1 text-white/30">Fireworks: Show 1-5 fingers for text shapes</p>
-            </div>
         </div>
     );
 }
