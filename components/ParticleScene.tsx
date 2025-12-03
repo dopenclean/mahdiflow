@@ -70,6 +70,20 @@ function countExtendedFingers(landmarks: NormalizedLandmarkList): number {
     return count;
 }
 
+function getInterpolatedColor(gradient: ColorGradient, t: number): THREE.Color {
+    const start = new THREE.Color(gradient.start);
+    const end = new THREE.Color(gradient.end);
+    if (gradient.mid) {
+        const mid = new THREE.Color(gradient.mid);
+        if (t < 0.5) {
+            return start.lerp(mid, t * 2);
+        } else {
+            return mid.lerp(end, (t - 0.5) * 2);
+        }
+    }
+    return start.lerp(end, t);
+}
+
 export default function ParticleScene({ shape: initialShape, gradient }: ParticleSceneProps) {
     const containerRef = useRef<HTMLDivElement>(null);
     const videoRef = useRef<HTMLVideoElement>(null);
@@ -83,26 +97,24 @@ export default function ParticleScene({ shape: initialShape, gradient }: Particl
     const currentShapeRef = useRef<ShapeType>(initialShape); // Current active shape (can change with fingers)
     const rotationSpeedRef = useRef(0.002);
     const rotationDirectionRef = useRef(1); // 1 for right, -1 for left
-    const flickerPhaseRef = useRef(0);
+    const baseColorsRef = useRef<Float32Array | null>(null);
 
     useEffect(() => {
         latestGradient.current = gradient;
-        if (particlesRef.current) {
-            // Update gradient colors in the color attribute
-            const colors = (particlesRef.current.geometry.attributes.color.array as Float32Array);
-            const particleCount = colors.length / 3;
+        if (particlesRef.current && baseColorsRef.current) {
+            // Update gradient colors in the baseColors array
+            const baseColors = baseColorsRef.current;
+            const particleCount = baseColors.length / 3;
 
             for (let i = 0; i < particleCount; i++) {
                 const t = i / particleCount;
-                const startColor = new THREE.Color(gradient.start);
-                const endColor = new THREE.Color(gradient.end);
-                const color = startColor.clone().lerp(endColor, t);
+                const color = getInterpolatedColor(gradient, t);
 
-                colors[i * 3] = color.r;
-                colors[i * 3 + 1] = color.g;
-                colors[i * 3 + 2] = color.b;
+                baseColors[i * 3] = color.r;
+                baseColors[i * 3 + 1] = color.g;
+                baseColors[i * 3 + 2] = color.b;
             }
-            particlesRef.current.geometry.attributes.color.needsUpdate = true;
+            // We don't force update here because the animation loop handles it
         }
     }, [gradient]);
 
@@ -158,6 +170,8 @@ export default function ParticleScene({ shape: initialShape, gradient }: Particl
             const positions = new Float32Array(particleCount * 3);
             const sizes = new Float32Array(particleCount);
             const colors = new Float32Array(particleCount * 3);
+            const baseColors = new Float32Array(particleCount * 3);
+            baseColorsRef.current = baseColors;
 
             for (let i = 0; i < particleCount * 3; i++) {
                 positions[i] = (Math.random() - 0.5) * 10;
@@ -169,9 +183,11 @@ export default function ParticleScene({ shape: initialShape, gradient }: Particl
 
                 // Initialize colors with gradient
                 const t = i / particleCount;
-                const startColor = new THREE.Color(latestGradient.current.start);
-                const endColor = new THREE.Color(latestGradient.current.end);
-                const color = startColor.clone().lerp(endColor, t);
+                const color = getInterpolatedColor(latestGradient.current, t);
+
+                baseColors[i * 3] = color.r;
+                baseColors[i * 3 + 1] = color.g;
+                baseColors[i * 3 + 2] = color.b;
 
                 colors[i * 3] = color.r;
                 colors[i * 3 + 1] = color.g;
@@ -415,11 +431,11 @@ export default function ParticleScene({ shape: initialShape, gradient }: Particl
                 const finalScale = handDistance * shrinkFactor;
 
                 // Flicker effect for fireworks and text shapes
-                let flickerMultiplier = 1.0;
-                if (currentShapeRef.current === 'fireworks' || isShowingText) {
-                    flickerPhaseRef.current += 0.05;
-                    flickerMultiplier = 0.7 + Math.sin(flickerPhaseRef.current) * 0.3;
-                }
+                const isFireworks = currentShapeRef.current === 'fireworks' || isShowingText;
+                const time = Date.now() * 0.001;
+
+                const baseColors = baseColorsRef.current;
+                if (!baseColors) return;
 
                 for (let i = 0; i < particleCount; i++) {
                     const ix = i * 3;
@@ -452,14 +468,26 @@ export default function ParticleScene({ shape: initialShape, gradient }: Particl
                     positions[iz] = currentPositions[iz];
 
                     // Update colors with flicker
-                    const t = i / particleCount;
-                    const startColor = new THREE.Color(latestGradient.current.start);
-                    const endColor = new THREE.Color(latestGradient.current.end);
-                    const color = startColor.clone().lerp(endColor, t);
+                    let flicker = 1.0;
+                    if (isFireworks) {
+                        // Per-particle sparkle
+                        const speed = 2.0 + (i % 5);
+                        const offset = i * 10;
+                        const noise = Math.sin(time * speed + offset);
 
-                    particleColors[ix] = color.r * flickerMultiplier;
-                    particleColors[iy] = color.g * flickerMultiplier;
-                    particleColors[iz] = color.b * flickerMultiplier;
+                        // Sharp flash
+                        if (noise > 0.9) {
+                            flicker = 1.5; // Bright flash
+                        } else if (noise > 0.5) {
+                            flicker = 1.2;
+                        } else {
+                            flicker = 0.8 + noise * 0.2; // Base shimmer
+                        }
+                    }
+
+                    particleColors[ix] = baseColors[ix] * flicker;
+                    particleColors[iy] = baseColors[iy] * flicker;
+                    particleColors[iz] = baseColors[iz] * flicker;
                 }
 
                 particles.geometry.attributes.position.needsUpdate = true;
