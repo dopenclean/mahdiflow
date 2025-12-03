@@ -16,7 +16,7 @@ export default function Home() {
   return (
     <main className="relative w-screen h-screen overflow-hidden bg-black">
       <div className="absolute top-8 left-8 z-10">
-        <h1 className="text-2xl font-bold text-white tracking-tighter">Particle<span className="text-white/50">Flow</span></h1>
+        <h1 className="text-2xl font-bold text-white tracking-tighter">Mahdi<span className="text-white/50">FLOW</span></h1>
       </div>
 
       <ParticleScene shape={shape} gradient={gradient} />

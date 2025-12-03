@@ -34,14 +34,19 @@ function createParticleTexture() {
 function countExtendedFingers(landmarks: NormalizedLandmarkList): number {
     let count = 0;
 
-    // Thumb: Compare tip (4) with IP joint (3) on X-axis
+    // Thumb: Calculate distance between Thumb Tip (4) and Index Finger MCP (5)
+    // If distance is large enough, thumb is extended.
     const thumbTip = landmarks[4];
-    const thumbIP = landmarks[3];
-    const thumbMCP = landmarks[2];
+    const indexMCP = landmarks[5];
+    const thumbIndexDist = Math.sqrt(
+        Math.pow(thumbTip.x - indexMCP.x, 2) +
+        Math.pow(thumbTip.y - indexMCP.y, 2)
+    );
 
-    // Thumb is extended if tip is further from palm than IP joint
-    const thumbExtended = Math.abs(thumbTip.x - thumbMCP.x) > Math.abs(thumbIP.x - thumbMCP.x);
-    if (thumbExtended) count++;
+    // Threshold for thumb extension (adjust if needed)
+    if (thumbIndexDist > 0.15) {
+        count++;
+    }
 
     // Other fingers: Compare tip Y with MCP (base) Y
     // Finger tips: 8 (index), 12 (middle), 16 (ring), 20 (pinky)
@@ -314,8 +319,8 @@ export default function ParticleScene({ shape: initialShape, gradient }: Particl
                         currentShapeRef.current === 'rz' ||
                         currentShapeRef.current === 'indra';
 
-                    // Pinch = Spin with direction
-                    if (rightHandPinching || leftHandPinching) {
+                    // Pinch = Spin with direction (Disabled in fireworks/text mode)
+                    if ((rightHandPinching || leftHandPinching) && !isFireworksMode && !isShowingText) {
                         rotationSpeedRef.current = 0.05; // Fast spin when pinching
 
                         if (rightHandPinching && !leftHandPinching) {
@@ -328,9 +333,9 @@ export default function ParticleScene({ shape: initialShape, gradient }: Particl
                     else if (handTension > 0.5 && !isShowingText) {
                         rotationSpeedRef.current = 0.002; // Keep slow rotation
                     }
-                    // No gesture = slow rotation
+                    // No gesture = slow rotation (Stop rotation in fireworks/text mode)
                     else {
-                        rotationSpeedRef.current = 0.002;
+                        rotationSpeedRef.current = (isFireworksMode || isShowingText) ? 0 : 0.002;
                     }
 
                     // Two hands = Scale (disabled when showing text for stability)
@@ -347,7 +352,7 @@ export default function ParticleScene({ shape: initialShape, gradient }: Particl
                 } else {
                     handTension *= 0.95;
                     handDistance = handDistance * 0.95 + 1.0 * 0.05;
-                    rotationSpeedRef.current = 0.002;
+                    rotationSpeedRef.current = (baseShapeRef.current === 'fireworks') ? 0 : 0.002;
 
                     // Return to base fireworks shape when no hands detected
                     if (baseShapeRef.current === 'fireworks' && currentShapeRef.current !== 'fireworks') {
