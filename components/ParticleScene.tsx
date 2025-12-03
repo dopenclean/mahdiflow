@@ -98,6 +98,7 @@ export default function ParticleScene({ shape: initialShape, gradient }: Particl
     const rotationSpeedRef = useRef(0.002);
     const rotationDirectionRef = useRef(1); // 1 for right, -1 for left
     const baseColorsRef = useRef<Float32Array | null>(null);
+    const baseSizesRef = useRef<Float32Array | null>(null);
 
     useEffect(() => {
         latestGradient.current = gradient;
@@ -172,6 +173,8 @@ export default function ParticleScene({ shape: initialShape, gradient }: Particl
             const colors = new Float32Array(particleCount * 3);
             const baseColors = new Float32Array(particleCount * 3);
             baseColorsRef.current = baseColors;
+            const baseSizes = new Float32Array(particleCount);
+            baseSizesRef.current = baseSizes;
 
             for (let i = 0; i < particleCount * 3; i++) {
                 positions[i] = (Math.random() - 0.5) * 10;
@@ -179,7 +182,9 @@ export default function ParticleScene({ shape: initialShape, gradient }: Particl
 
             // Randomize particle sizes for depth effect
             for (let i = 0; i < particleCount; i++) {
-                sizes[i] = Math.random() * 0.05 + 0.03; // 0.03 to 0.08
+                const size = Math.random() * 0.05 + 0.03; // 0.03 to 0.08
+                sizes[i] = size;
+                baseSizes[i] = size;
 
                 // Initialize colors with gradient
                 const t = i / particleCount;
@@ -415,6 +420,7 @@ export default function ParticleScene({ shape: initialShape, gradient }: Particl
                 const positions = particles.geometry.attributes.position.array as Float32Array;
                 const targets = targetPositionsRef.current;
                 const particleColors = particles.geometry.attributes.color.array as Float32Array;
+                const particleSizes = particles.geometry.attributes.size.array as Float32Array;
 
                 if (!targets) return;
 
@@ -470,28 +476,45 @@ export default function ParticleScene({ shape: initialShape, gradient }: Particl
                     // Update colors with flicker
                     let flicker = 1.0;
                     if (isFireworks) {
-                        // Per-particle sparkle
-                        const speed = 2.0 + (i % 5);
-                        const offset = i * 10;
+                        // Aggressive sparkle
+                        const speed = 8.0 + (i % 10); // Much faster speed
+                        const offset = i * 133.7; // Random-ish offset
                         const noise = Math.sin(time * speed + offset);
 
-                        // Sharp flash
+                        // Very sharp, aggressive flash
                         if (noise > 0.9) {
-                            flicker = 1.5; // Bright flash
+                            flicker = 4.0; // Super bright flash
                         } else if (noise > 0.5) {
-                            flicker = 1.2;
+                            flicker = 2.5; // Bright flash
+                        } else if (noise > 0.0) {
+                            flicker = 1.5; // Normal
                         } else {
-                            flicker = 0.8 + noise * 0.2; // Base shimmer
+                            flicker = 0.3; // Darker for contrast
                         }
                     }
 
                     particleColors[ix] = baseColors[ix] * flicker;
                     particleColors[iy] = baseColors[iy] * flicker;
                     particleColors[iz] = baseColors[iz] * flicker;
+
+                    // Update sizes for fireworks
+                    if (isFireworks && baseSizesRef.current) {
+                        const baseSize = baseSizesRef.current[i];
+                        // Randomize size changing
+                        const sizeSpeed = 3.0 + (i % 7);
+                        const sizeOffset = i * 12.34;
+                        const sizeNoise = Math.sin(time * sizeSpeed + sizeOffset);
+
+                        // Size fluctuates between 0.5x and 1.5x of base size
+                        particleSizes[i] = baseSize * (1.0 + sizeNoise * 0.5);
+                    } else if (baseSizesRef.current) {
+                        particleSizes[i] = baseSizesRef.current[i];
+                    }
                 }
 
                 particles.geometry.attributes.position.needsUpdate = true;
                 particles.geometry.attributes.color.needsUpdate = true;
+                particles.geometry.attributes.size.needsUpdate = true;
 
                 // Rotation with direction
                 particles.rotation.y += rotationSpeedRef.current * rotationDirectionRef.current;
