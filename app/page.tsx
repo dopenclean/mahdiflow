@@ -10,7 +10,7 @@ import { gradientPalettes, ColorGradient } from '../utils/gradients';
 const ParticleScene = dynamic(() => import('../components/ParticleScene'), { ssr: false });
 
 export default function Home() {
-  const [shape, setShape] = useState<ShapeType>('heart');
+  const [shape, setShape] = useState<ShapeType>('fireworks');
   const [gradient, setGradient] = useState<ColorGradient>(gradientPalettes[0]);
 
   return (

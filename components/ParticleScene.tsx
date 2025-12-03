@@ -367,8 +367,12 @@ export default function ParticleScene({ shape: initialShape, gradient }: Particl
 
             cameraUtils = new Camera(videoRef.current!, {
                 onFrame: async () => {
-                    if (videoRef.current && hands) {
-                        await hands.send({ image: videoRef.current });
+                    if (videoRef.current && hands && isMounted) {
+                        try {
+                            await hands.send({ image: videoRef.current });
+                        } catch (error) {
+                            console.warn("MediaPipe send error:", error);
+                        }
                     }
                 },
                 width: 640,
